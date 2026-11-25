@@ -5,10 +5,7 @@ import {
   CheckCircle,
   Calendar,
   Building,
-  User,
   Stethoscope,
-  Clock,
-  ArrowRight
 } from 'lucide-react';
 
 export default function PatientTable({
@@ -20,10 +17,10 @@ export default function PatientTable({
 }) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs p-12 text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-teal-500 border-t-transparent mb-4"></div>
-        <p className="text-sm font-semibold text-slate-700">Loading patient records...</p>
-        <p className="text-xs text-slate-400 mt-1">Retrieving database state</p>
+      <div className="bg-white rounded-xl border-2 border-slate-300 overflow-hidden shadow-xs p-12 text-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-teal-600 border-t-transparent mb-4"></div>
+        <p className="text-sm font-bold text-slate-800">Loading patient records...</p>
+        <p className="text-xs text-slate-500 mt-1">Retrieving database state</p>
       </div>
     );
   }
@@ -32,32 +29,29 @@ export default function PatientTable({
     if (!dateStr) return 'N/A';
     try {
       const [year, month, day] = dateStr.split('-');
-      const d = new Date(year, parseInt(month) - 1, day);
-      return d.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
+      // Format as DD/MM/YYYY (Indian standard convention)
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
     } catch {
       return dateStr;
     }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+    <div className="bg-white rounded-xl border-2 border-slate-300 shadow-sm overflow-hidden">
+      {/* Desktop & Wide Screens: High-Contrast Table View */}
       <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              <th className="py-3.5 px-4">Patient Info</th>
-              <th className="py-3.5 px-4">Ward & Department</th>
-              <th className="py-3.5 px-4">Attending Doctor</th>
-              <th className="py-3.5 px-4">Admission Date</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-4 text-right">Actions</th>
+            <tr className="bg-slate-100 border-b-2 border-slate-300 text-[11px] font-bold uppercase tracking-wider text-slate-800">
+              <th className="py-4 px-4 border-r border-slate-200">Patient Info</th>
+              <th className="py-4 px-4 border-r border-slate-200">Ward & Department</th>
+              <th className="py-4 px-4 border-r border-slate-200">Attending Doctor</th>
+              <th className="py-4 px-4 border-r border-slate-200">Admission Date</th>
+              <th className="py-4 px-4 border-r border-slate-200">Status</th>
+              <th className="py-4 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-xs">
+          <tbody className="divide-y-2 divide-slate-200 text-xs">
             {patients.map((patient) => {
               const isAdmitted = patient.status === 'Admitted';
               const initial = patient.name ? patient.name.charAt(0).toUpperCase() : '?';
@@ -65,71 +59,82 @@ export default function PatientTable({
               return (
                 <tr
                   key={patient.id}
-                  className="hover:bg-slate-50/60 transition-colors duration-100 group"
+                  className="even:bg-slate-50/70 hover:bg-teal-50/60 transition-colors duration-150 group border-b border-slate-200"
                 >
-                  <td className="py-3.5 px-4">
+                  {/* Patient Info */}
+                  <td className="py-4 px-4 border-r border-slate-200/80">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs ${
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 ${
                         isAdmitted
-                          ? 'bg-teal-100 text-teal-800 border border-teal-200'
-                          : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          ? 'bg-teal-600 text-white shadow-xs ring-2 ring-teal-200'
+                          : 'bg-slate-200 text-slate-700 ring-2 ring-slate-300'
                       }`}>
                         {initial}
                       </div>
                       <div>
-                        <div className="font-semibold text-slate-900 text-sm">{patient.name}</div>
-                        <div className="text-[11px] text-slate-500 font-medium">
-                          {patient.age} yrs • {patient.gender} • <span className="text-slate-400">ID #{patient.id}</span>
+                        <div className="font-bold text-slate-900 text-sm">{patient.name}</div>
+                        <div className="text-xs text-slate-600 font-medium flex items-center gap-1.5 mt-0.5">
+                          <span>{patient.age} yrs</span>
+                          <span>•</span>
+                          <span>{patient.gender}</span>
+                          <span className="bg-slate-200/90 text-slate-800 px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border border-slate-300">
+                            ID #{patient.id}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </td>
 
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-800">{patient.ward}</div>
-                    <div className="text-[11px] text-teal-700 font-medium flex items-center mt-0.5">
-                      <Building className="w-3 h-3 mr-1 text-teal-500" />
+                  {/* Ward & Department */}
+                  <td className="py-4 px-4 border-r border-slate-200/80">
+                    <div className="font-bold text-slate-900 text-sm">{patient.ward}</div>
+                    <div className="text-xs text-teal-800 font-semibold flex items-center mt-1">
+                      <Building className="w-3.5 h-3.5 mr-1 text-teal-600 flex-shrink-0" />
                       {patient.department}
                     </div>
                   </td>
 
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center text-slate-700 font-medium">
-                      <Stethoscope className="w-3.5 h-3.5 mr-1.5 text-slate-400 flex-shrink-0" />
-                      <span className="truncate max-w-[210px]">{patient.doctor}</span>
+                  {/* Attending Doctor */}
+                  <td className="py-4 px-4 border-r border-slate-200/80">
+                    <div className="flex items-center text-slate-900 font-medium">
+                      <Stethoscope className="w-4 h-4 mr-2 text-teal-600 flex-shrink-0" />
+                      <span className="truncate max-w-[210px] font-semibold">{patient.doctor}</span>
                     </div>
                   </td>
 
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center text-slate-600">
-                      <Calendar className="w-3.5 h-3.5 mr-1.5 text-slate-400 flex-shrink-0" />
+                  {/* Admission Date */}
+                  <td className="py-4 px-4 border-r border-slate-200/80">
+                    <div className="flex items-center text-slate-800 font-mono font-semibold">
+                      <Calendar className="w-4 h-4 mr-2 text-slate-500 flex-shrink-0" />
                       <span>{formatDate(patient.admission_date)}</span>
                     </div>
                   </td>
 
-                  <td className="py-3.5 px-4">
+                  {/* Status Badge */}
+                  <td className="py-4 px-4 border-r border-slate-200/80">
                     {isAdmitted ? (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border-2 border-emerald-400 shadow-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-600 mr-1.5 animate-pulse"></span>
                         Admitted
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                        <CheckCircle className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-800 border-2 border-slate-400">
+                        <CheckCircle className="w-3.5 h-3.5 mr-1.5 text-slate-600" />
                         Discharged
                       </span>
                     )}
                   </td>
 
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end space-x-1.5">
+                  {/* Actions */}
+                  <td className="py-4 px-4 text-right">
+                    <div className="flex items-center justify-end space-x-2">
                       {isAdmitted && (
                         <button
                           onClick={() => onDischargePatient(patient)}
                           title="Mark patient as Discharged"
-                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 rounded-lg text-xs font-semibold border border-slate-200 hover:border-emerald-300 transition-colors inline-flex items-center"
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold border border-emerald-700 shadow-xs transition-colors inline-flex items-center"
                         >
-                          <CheckCircle className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                          <CheckCircle className="w-3.5 h-3.5 mr-1 text-white" />
                           <span>Discharge</span>
                         </button>
                       )}
@@ -137,7 +142,7 @@ export default function PatientTable({
                       <button
                         onClick={() => onEditPatient(patient)}
                         title="Edit Patient Details"
-                        className="p-1.5 text-slate-500 hover:text-teal-700 hover:bg-teal-50 rounded-lg border border-transparent hover:border-teal-200 transition-colors"
+                        className="p-1.5 text-slate-700 hover:text-teal-900 hover:bg-teal-100 rounded-lg border-2 border-slate-300 hover:border-teal-500 bg-white transition-colors"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
@@ -145,7 +150,7 @@ export default function PatientTable({
                       <button
                         onClick={() => onOpenDeleteModal(patient)}
                         title="Delete Patient Record"
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-colors"
+                        className="p-1.5 text-rose-700 hover:text-rose-900 hover:bg-rose-100 rounded-lg border-2 border-rose-300 hover:border-rose-500 bg-white transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -158,82 +163,118 @@ export default function PatientTable({
         </table>
       </div>
 
-      <div className="lg:hidden divide-y divide-slate-100">
-        {patients.map((patient) => {
-          const isAdmitted = patient.status === 'Admitted';
-          const initial = patient.name ? patient.name.charAt(0).toUpperCase() : '?';
+      {/* Small Screens (Tablets & Mobile): Distinct, High-Contrast Cards */}
+      <div className="lg:hidden bg-slate-100/80 p-3.5 sm:p-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {patients.map((patient) => {
+            const isAdmitted = patient.status === 'Admitted';
+            const initial = patient.name ? patient.name.charAt(0).toUpperCase() : '?';
 
-          return (
-            <div key={patient.id} className="p-4 space-y-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                    isAdmitted
-                      ? 'bg-teal-100 text-teal-800 border border-teal-200'
-                      : 'bg-slate-100 text-slate-600 border border-slate-200'
-                  }`}>
-                    {initial}
+            return (
+              <div
+                key={patient.id}
+                className={`bg-white rounded-xl border-2 border-slate-300 shadow-sm hover:shadow-md transition-all p-4 sm:p-5 space-y-3.5 ${
+                  isAdmitted
+                    ? 'border-l-[6px] border-l-teal-600'
+                    : 'border-l-[6px] border-l-slate-400'
+                }`}
+              >
+                {/* Header: Avatar, Name, and Status */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 ${
+                      isAdmitted
+                        ? 'bg-teal-600 text-white shadow-xs ring-2 ring-teal-200'
+                        : 'bg-slate-200 text-slate-700 ring-2 ring-slate-300'
+                    }`}>
+                      {initial}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base leading-snug">{patient.name}</h3>
+                      <div className="flex items-center flex-wrap gap-1.5 text-xs text-slate-700 font-semibold mt-0.5">
+                        <span>{patient.age} yrs</span>
+                        <span>•</span>
+                        <span>{patient.gender}</span>
+                        <span className="bg-slate-200/90 text-slate-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px] border border-slate-300">
+                          ID #{patient.id}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Status Badge */}
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm">{patient.name}</h3>
-                    <p className="text-xs text-slate-500">
-                      {patient.age} yrs • {patient.gender} • ID #{patient.id}
-                    </p>
+                    {isAdmitted ? (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-900 border-2 border-emerald-400 shadow-xs flex-shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-emerald-600 mr-1.5 animate-pulse"></span>
+                        Admitted
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-800 border-2 border-slate-400 flex-shrink-0">
+                        Discharged
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {isAdmitted ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-                    Admitted
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                    Discharged
-                  </span>
-                )}
-              </div>
+                {/* Patient Clinical Info Block */}
+                <div className="bg-slate-50 border-2 border-slate-200/90 rounded-lg p-3 space-y-2.5 text-xs">
+                  <div className="flex items-start space-x-2.5">
+                    <Building className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Ward & Department</span>
+                      <span className="font-bold text-slate-900 text-xs block">{patient.ward}</span>
+                      <span className="text-teal-800 font-semibold text-xs block mt-0.5">{patient.department}</span>
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Ward & Dept</span>
-                  <span className="font-semibold text-slate-800">{patient.ward}</span>
-                  <span className="text-teal-700 block text-[11px] font-medium">{patient.department}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Doctor & Date</span>
-                  <span className="font-medium text-slate-800 truncate block">{patient.doctor}</span>
-                  <span className="text-slate-500 block text-[11px]">{formatDate(patient.admission_date)}</span>
-                </div>
-              </div>
+                  <div className="flex items-start space-x-2.5 pt-2 border-t border-slate-200">
+                    <Stethoscope className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Attending Doctor</span>
+                      <span className="font-semibold text-slate-900 text-xs block truncate">{patient.doctor}</span>
+                    </div>
+                  </div>
 
-              <div className="flex items-center justify-end space-x-2 pt-1">
-                {isAdmitted && (
+                  <div className="flex items-center space-x-2.5 pt-2 border-t border-slate-200">
+                    <Calendar className="w-4 h-4 text-slate-600 flex-shrink-0" />
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Admitted:</span>
+                      <span className="font-mono font-bold text-slate-900 text-xs">{formatDate(patient.admission_date)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions Bar */}
+                <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-200">
+                  {isAdmitted && (
+                    <button
+                      onClick={() => onDischargePatient(patient)}
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg border border-emerald-700 shadow-xs inline-flex items-center active:scale-95 transition-all"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                      Discharge
+                    </button>
+                  )}
                   <button
-                    onClick={() => onDischargePatient(patient)}
-                    className="px-3 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold rounded-lg border border-emerald-200 inline-flex items-center"
+                    onClick={() => onEditPatient(patient)}
+                    className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg border-2 border-slate-300 inline-flex items-center active:scale-95 transition-all"
                   >
-                    <CheckCircle className="w-3.5 h-3.5 mr-1" />
-                    Discharge
+                    <Edit3 className="w-3.5 h-3.5 mr-1.5" />
+                    Edit
                   </button>
-                )}
-                <button
-                  onClick={() => onEditPatient(patient)}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 inline-flex items-center"
-                >
-                  <Edit3 className="w-3.5 h-3.5 mr-1" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => onOpenDeleteModal(patient)}
-                  className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  <button
+                    onClick={() => onOpenDeleteModal(patient)}
+                    className="p-1.5 text-rose-700 hover:bg-rose-100 rounded-lg border-2 border-rose-300 bg-rose-50 inline-flex items-center active:scale-95 transition-all"
+                    title="Delete Patient Record"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

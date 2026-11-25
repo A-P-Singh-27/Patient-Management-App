@@ -1,40 +1,40 @@
 export const DEFAULT_GENDERS = ["Male", "Female", "Other"];
 
 export const DEFAULT_WARDS = [
-  "General Ward A",
-  "General Ward B",
+  "General Ward (Male)",
+  "General Ward (Female)",
   "Intensive Care Unit (ICU)",
-  "Emergency Care Ward",
+  "Emergency Ward",
   "Pediatric Ward",
   "Maternity Ward",
-  "Surgical Ward",
-  "Oncology Ward",
-  "Cardiology CCU",
+  "Private Ward",
+  "Semi-Private Ward",
+  "Cardiac CCU",
   "Orthopedic Ward"
 ];
 
 export const DEFAULT_DEPARTMENTS = [
+  "General Medicine",
   "Cardiology",
   "Neurology",
   "Orthopedics",
   "Pediatrics",
-  "Oncology",
-  "General Medicine",
+  "Obstetrics & Gynecology",
   "General Surgery",
   "Emergency Medicine",
-  "Gynecology & Obstetrics"
+  "Oncology"
 ];
 
 export const DEFAULT_DOCTORS = [
-  "Dr. Sarah Jenkins (Cardiology)",
-  "Dr. Michael Chang (Neurology)",
-  "Dr. Robert Davis (Orthopedics)",
-  "Dr. Emily Patel (Pediatrics)",
-  "Dr. David Kim (Oncology)",
-  "Dr. James Wilson (General Medicine)",
-  "Dr. Lisa Anderson (General Surgery)",
-  "Dr. Rachel Martinez (Emergency Medicine)",
-  "Dr. Priya Sharma (Gynecology & Obstetrics)"
+  "Dr. Rajesh Sharma (Cardiology)",
+  "Dr. Anjali Verma (Neurology)",
+  "Dr. Amit Patel (Orthopedics)",
+  "Dr. Pooja Mishra (Pediatrics)",
+  "Dr. Suresh Reddy (General Medicine)",
+  "Dr. Sunita Nair (Obstetrics & Gynecology)",
+  "Dr. Vikram Malhotra (General Surgery)",
+  "Dr. Priya Singh (Emergency Medicine)",
+  "Dr. Manoj Kumar (Oncology)"
 ];
 
 export const STATUS_OPTIONS = ["Admitted", "Discharged"];

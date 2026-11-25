@@ -7,10 +7,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app.core.database import SessionLocal, Base, engine
 from app.models.patient import Patient
 
-def seed_database():
-    """Populates the database with realistic sample patient admissions."""
+def seed_database(force=False):
+    """Populates the database with realistic Indian patient admission records."""
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
+
+    if force:
+        db.query(Patient).delete()
+        db.commit()
 
     existing_count = db.query(Patient).count()
     if existing_count > 0:
@@ -21,102 +25,102 @@ def seed_database():
     today = date.today()
     sample_patients = [
         Patient(
-            name="Alexander Wright",
+            name="Arjun Sharma",
             age=48,
             gender="Male",
             ward="Intensive Care Unit (ICU)",
             department="Cardiology",
-            doctor="Dr. Sarah Jenkins (Cardiology)",
+            doctor="Dr. Rajesh Sharma (Cardiology)",
             admission_date=today - timedelta(days=3),
             status="Admitted",
         ),
         Patient(
-            name="Eleanor Vance",
-            age=34,
+            name="Priya Verma",
+            age=29,
             gender="Female",
             ward="Maternity Ward",
-            department="Gynecology & Obstetrics",
-            doctor="Dr. Priya Sharma (Gynecology & Obstetrics)",
+            department="Obstetrics & Gynecology",
+            doctor="Dr. Sunita Nair (Obstetrics & Gynecology)",
             admission_date=today - timedelta(days=1),
             status="Admitted",
         ),
         Patient(
-            name="Liam Henderson",
+            name="Rohan Joshi",
             age=9,
             gender="Male",
             ward="Pediatric Ward",
             department="Pediatrics",
-            doctor="Dr. Emily Patel (Pediatrics)",
+            doctor="Dr. Pooja Mishra (Pediatrics)",
             admission_date=today - timedelta(days=5),
             status="Admitted",
         ),
         Patient(
-            name="Margaret Sullivan",
-            age=72,
+            name="Sunita Devi",
+            age=68,
             gender="Female",
-            ward="General Ward A",
+            ward="General Ward (Female)",
             department="Neurology",
-            doctor="Dr. Michael Chang (Neurology)",
+            doctor="Dr. Anjali Verma (Neurology)",
             admission_date=today - timedelta(days=8),
             status="Discharged",
         ),
         Patient(
-            name="James Thorne",
-            age=55,
+            name="Vikram Malhotra",
+            age=54,
             gender="Male",
             ward="Orthopedic Ward",
             department="Orthopedics",
-            doctor="Dr. Robert Davis (Orthopedics)",
+            doctor="Dr. Amit Patel (Orthopedics)",
             admission_date=today - timedelta(days=2),
             status="Admitted",
         ),
         Patient(
-            name="Sophia Garcia",
-            age=29,
+            name="Neha Gupta",
+            age=26,
             gender="Female",
-            ward="Emergency Care Ward",
+            ward="Emergency Ward",
             department="Emergency Medicine",
-            doctor="Dr. Rachel Martinez (Emergency Medicine)",
+            doctor="Dr. Priya Singh (Emergency Medicine)",
             admission_date=today,
             status="Admitted",
         ),
         Patient(
-            name="Arthur Pendelton",
-            age=63,
+            name="Rajesh Patel",
+            age=62,
             gender="Male",
-            ward="Oncology Ward",
+            ward="Private Ward",
             department="Oncology",
-            doctor="Dr. David Kim (Oncology)",
+            doctor="Dr. Manoj Kumar (Oncology)",
             admission_date=today - timedelta(days=14),
             status="Admitted",
         ),
         Patient(
-            name="Clara Oswald",
-            age=31,
+            name="Ananya Iyer",
+            age=32,
             gender="Female",
-            ward="Surgical Ward",
+            ward="Semi-Private Ward",
             department="General Surgery",
-            doctor="Dr. Lisa Anderson (General Surgery)",
+            doctor="Dr. Vikram Malhotra (General Surgery)",
             admission_date=today - timedelta(days=4),
             status="Discharged",
         ),
         Patient(
-            name="Lucas Bennett",
-            age=42,
+            name="Suresh Reddy",
+            age=44,
             gender="Male",
-            ward="General Ward B",
+            ward="General Ward (Male)",
             department="General Medicine",
-            doctor="Dr. James Wilson (General Medicine)",
+            doctor="Dr. Suresh Reddy (General Medicine)",
             admission_date=today - timedelta(days=6),
             status="Admitted",
         ),
         Patient(
-            name="Evelyn Harper",
-            age=67,
+            name="Meera Nambiar",
+            age=65,
             gender="Female",
-            ward="Cardiology CCU",
+            ward="Cardiac CCU",
             department="Cardiology",
-            doctor="Dr. Sarah Jenkins (Cardiology)",
+            doctor="Dr. Rajesh Sharma (Cardiology)",
             admission_date=today - timedelta(days=7),
             status="Discharged",
         ),
@@ -124,8 +128,8 @@ def seed_database():
 
     db.add_all(sample_patients)
     db.commit()
-    print(f"Successfully seeded {len(sample_patients)} realistic patient records into database.")
+    print(f"Successfully seeded {len(sample_patients)} realistic Indian patient records into database.")
     db.close()
 
 if __name__ == "__main__":
-    seed_database()
+    seed_database(force=True)

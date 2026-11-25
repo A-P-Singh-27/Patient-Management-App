@@ -208,8 +208,16 @@ class PatientStatusUpdate(BaseModel):
             raise ValueError(f"Invalid status '{cleaned}'. Allowed options: {', '.join(settings.STATUSES)}")
         return cleaned
 
-class PatientResponse(PatientBase):
+class PatientResponse(BaseModel):
     id: int
+    name: str
+    age: int
+    gender: str
+    ward: str
+    department: str
+    doctor: str
+    admission_date: date
+    status: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

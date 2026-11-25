@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, Activity, HeartPulse } from 'lucide-react';
 
 export default function Header({ onOpenNewModal }) {
-  const currentDate = new Date().toLocaleDateString('en-US', {
+  const currentDate = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',
     month: 'short',
@@ -19,12 +19,12 @@ export default function Header({ onOpenNewModal }) {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold text-slate-900 tracking-tight">CarePulse</h1>
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">Dscribe</h1>
                 <span className="bg-teal-50 text-teal-700 text-xs font-semibold px-2 py-0.5 rounded-full border border-teal-200/60">
                   Hospital Admission System
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Inpatient Management & Department Dispatch</p>
+              <p className="text-xs text-slate-500 font-medium">Inpatient Admission & Ward Management System</p>
             </div>
           </div>
 

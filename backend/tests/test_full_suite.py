@@ -82,9 +82,9 @@ def run_suite():
     print(f"[PASS] 3. Live GET /api/stats (Total: {stats['total_patients']}, Admitted: {stats['admitted_patients']})", flush=True)
 
     # 4. Search
-    status, patients = make_request("/api/patients?search=Alexander")
+    status, patients = make_request("/api/patients?search=Arjun")
     assert status == 200 and len(patients) >= 1
-    print(f"[PASS] 4. Live GET /api/patients?search=Alexander (Found: {patients[0]['name']})", flush=True)
+    print(f"[PASS] 4. Live GET /api/patients?search=Arjun (Found: {patients[0]['name']})", flush=True)
 
     # 5. Filter by Department
     status, cardio = make_request("/api/patients?department=Cardiology")
@@ -94,7 +94,7 @@ def run_suite():
     # 6. Create Patient
     today_str = date.today().isoformat()
     new_patient = {
-        "name": "Florence Nightingale",
+        "name": "Kavita Singhania",
         "age": 42,
         "gender": "Female",
         "ward": meta["wards"][0],
@@ -134,7 +134,7 @@ def run_suite():
     print(f"[PASS] 11. GET deleted patient returns 404 Not Found", flush=True)
 
     # 12. Validation: Name with digits rejected (422)
-    bad_name = {**new_patient, "name": "Florence123"}
+    bad_name = {**new_patient, "name": "Kavita123"}
     status, err = make_request("/api/patients", method="POST", data=bad_name)
     assert status == 422 and "name" in err.get("errors", {})
     print(f"[PASS] 12. Validation: Invalid name rejected (422: {err['errors']['name']})", flush=True)

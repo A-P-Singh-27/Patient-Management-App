@@ -1,4 +1,4 @@
-# 🏥 CarePulse — Hospital Patient Admission Management Web App
+# 🏥 Dscribe — Hospital Patient Admission Management Web App
 
 [![React](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/Backend-Python%20FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -257,9 +257,9 @@ Expected output:
 [PASS] 1. Live GET /health endpoint
 [PASS] 2. Live GET /api/metadata (10 wards, 9 departments)
 [PASS] 3. Live GET /api/stats (Total: 10, Admitted: 7)
-[PASS] 4. Live GET /api/patients?search=Alexander (Found: Alexander Wright)
+[PASS] 4. Live GET /api/patients?search=Arjun (Found: Arjun Sharma)
 [PASS] 5. Live GET /api/patients?department=Cardiology (Found: 2)
-[PASS] 6. Live POST /api/patients (Created ID #11: Florence Nightingale)
+[PASS] 6. Live POST /api/patients (Created ID #11: Kavita Singhania)
 [PASS] 7. Live PUT /api/patients/11 (Updated age to 43)
 [PASS] 8. Live PATCH /api/patients/11/discharge (Status: Discharged)
 [PASS] 9. Duplicate discharge rejected with 400 Bad Request
@@ -268,7 +268,7 @@ Expected output:
 [PASS] 12. Validation: Invalid name rejected (422)
 [PASS] 13. Validation: Future admission date rejected (422)
 [PASS] 14. Validation: Invalid age rejected (422)
-[PASS] 15. Database persistence verified: SQLite stores 10 records
+[PASS] 15. Database persistence verified: SQLite/PostgreSQL stores records
 ==================================================
    ALL 15 END-TO-END VERIFICATION CHECKS PASSED!  
 ==================================================

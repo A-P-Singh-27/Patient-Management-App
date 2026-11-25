@@ -18,7 +18,7 @@ export default function PatientModal({
     name: '',
     age: '',
     gender: 'Male',
-    ward: wards[0] || 'General Ward A',
+    ward: wards[0] || 'General Ward (Male)',
     department: departments[0] || 'General Medicine',
     doctor: doctors[0] || '',
     admission_date: todayString,
@@ -220,7 +220,7 @@ export default function PatientModal({
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Johnathan Doe (Letters and spaces only)"
+                  placeholder="e.g. Rahul Sharma (Letters and spaces only)"
                   className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:bg-white transition-all ${
                     errors.name
                       ? 'border-rose-400 focus:ring-rose-400 bg-rose-50/20'

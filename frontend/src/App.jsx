@@ -249,7 +249,7 @@ export default function App() {
       </main>
 
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <p>© 2026 CarePulse Medical Admission Management System. Built with React & FastAPI.</p>
+        <p>© 2026 Dscribe Medical Admission Management System. Built with React & FastAPI.</p>
       </footer>
 
       <PatientModal

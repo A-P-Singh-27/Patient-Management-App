@@ -18,7 +18,7 @@ def _resolve_database_url() -> str:
     return raw
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Hospital Patient Admission Management API"
+    PROJECT_NAME: str = "Dscribe Hospital Patient Admission Management API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api"
     DATABASE_URL: str = _resolve_database_url()
@@ -27,6 +27,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://pms-frontend-theta-eight.vercel.app",
         "*"
     ]
 
@@ -39,40 +40,40 @@ class Settings(BaseSettings):
     GENDERS: List[str] = ["Male", "Female", "Other"]
 
     WARDS: List[str] = [
-        "General Ward A",
-        "General Ward B",
+        "General Ward (Male)",
+        "General Ward (Female)",
         "Intensive Care Unit (ICU)",
-        "Emergency Care Ward",
+        "Emergency Ward",
         "Pediatric Ward",
         "Maternity Ward",
-        "Surgical Ward",
-        "Oncology Ward",
-        "Cardiology CCU",
+        "Private Ward",
+        "Semi-Private Ward",
+        "Cardiac CCU",
         "Orthopedic Ward"
     ]
 
     DEPARTMENTS: List[str] = [
+        "General Medicine",
         "Cardiology",
         "Neurology",
         "Orthopedics",
         "Pediatrics",
-        "Oncology",
-        "General Medicine",
+        "Obstetrics & Gynecology",
         "General Surgery",
         "Emergency Medicine",
-        "Gynecology & Obstetrics"
+        "Oncology"
     ]
 
     DOCTORS: List[str] = [
-        "Dr. Sarah Jenkins (Cardiology)",
-        "Dr. Michael Chang (Neurology)",
-        "Dr. Robert Davis (Orthopedics)",
-        "Dr. Emily Patel (Pediatrics)",
-        "Dr. David Kim (Oncology)",
-        "Dr. James Wilson (General Medicine)",
-        "Dr. Lisa Anderson (General Surgery)",
-        "Dr. Rachel Martinez (Emergency Medicine)",
-        "Dr. Priya Sharma (Gynecology & Obstetrics)"
+        "Dr. Rajesh Sharma (Cardiology)",
+        "Dr. Anjali Verma (Neurology)",
+        "Dr. Amit Patel (Orthopedics)",
+        "Dr. Pooja Mishra (Pediatrics)",
+        "Dr. Suresh Reddy (General Medicine)",
+        "Dr. Sunita Nair (Obstetrics & Gynecology)",
+        "Dr. Vikram Malhotra (General Surgery)",
+        "Dr. Priya Singh (Emergency Medicine)",
+        "Dr. Manoj Kumar (Oncology)"
     ]
 
     STATUSES: List[str] = ["Admitted", "Discharged"]

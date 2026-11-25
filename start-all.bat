@@ -1,6 +1,6 @@
 @echo off
 echo ========================================================
-echo   CarePulse - Patient Admission Management System
+echo   Dscribe - Patient Admission Management System
 echo ========================================================
 echo.
 
