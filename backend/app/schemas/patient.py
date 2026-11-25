@@ -79,15 +79,39 @@ class PatientBase(BaseModel):
             raise ValueError(f"Invalid doctor '{cleaned}'. Allowed options: {', '.join(settings.DOCTORS)}")
         return cleaned
 
-    @field_validator("admission_date")
+    @field_validator("admission_date", mode="before")
     @classmethod
-    def validate_admission_date(cls, v: date) -> date:
-        if not v:
+    def validate_admission_date(cls, v) -> date:
+        if v is None or (isinstance(v, str) and not v.strip()):
             raise ValueError("Admission date is required.")
+        
+        parsed_date = None
+        if isinstance(v, str):
+            clean_str = v.strip()
+            try:
+                if "/" in clean_str:
+                    parts = clean_str.split("/")
+                    if len(parts) == 3:
+                        parsed_date = date(int(parts[2]), int(parts[1]), int(parts[0]))
+                elif "-" in clean_str:
+                    parts = clean_str.split("-")
+                    if len(parts) == 3:
+                        if len(parts[0]) == 4:
+                            parsed_date = date(int(parts[0]), int(parts[1]), int(parts[2]))
+                        else:
+                            parsed_date = date(int(parts[2]), int(parts[1]), int(parts[0]))
+            except Exception:
+                raise ValueError(f"Invalid date format '{v}'. Please provide a valid date (YYYY-MM-DD).")
+        elif isinstance(v, date):
+            parsed_date = v
+
+        if not parsed_date:
+            raise ValueError(f"Invalid admission date '{v}'.")
+
         today = date.today()
-        if v > today:
-            raise ValueError(f"Admission date cannot be in the future. Selected date ({v}) is after today ({today}).")
-        return v
+        if parsed_date > today:
+            raise ValueError(f"Admission date cannot be in the future. Selected date ({parsed_date}) is after today ({today}).")
+        return parsed_date
 
     @field_validator("status")
     @classmethod
@@ -177,15 +201,39 @@ class PatientUpdate(BaseModel):
             raise ValueError(f"Invalid doctor '{cleaned}'.")
         return cleaned
 
-    @field_validator("admission_date")
+    @field_validator("admission_date", mode="before")
     @classmethod
-    def validate_admission_date(cls, v: Optional[date]) -> Optional[date]:
-        if v is None:
-            return v
+    def validate_admission_date(cls, v) -> Optional[date]:
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return None
+        
+        parsed_date = None
+        if isinstance(v, str):
+            clean_str = v.strip()
+            try:
+                if "/" in clean_str:
+                    parts = clean_str.split("/")
+                    if len(parts) == 3:
+                        parsed_date = date(int(parts[2]), int(parts[1]), int(parts[0]))
+                elif "-" in clean_str:
+                    parts = clean_str.split("-")
+                    if len(parts) == 3:
+                        if len(parts[0]) == 4:
+                            parsed_date = date(int(parts[0]), int(parts[1]), int(parts[2]))
+                        else:
+                            parsed_date = date(int(parts[2]), int(parts[1]), int(parts[0]))
+            except Exception:
+                raise ValueError(f"Invalid date format '{v}'. Please provide a valid date (YYYY-MM-DD).")
+        elif isinstance(v, date):
+            parsed_date = v
+
+        if not parsed_date:
+            raise ValueError(f"Invalid admission date '{v}'.")
+
         today = date.today()
-        if v > today:
-            raise ValueError(f"Admission date cannot be in the future ({v}).")
-        return v
+        if parsed_date > today:
+            raise ValueError(f"Admission date cannot be in the future. Selected date ({parsed_date}) is after today ({today}).")
+        return parsed_date
 
     @field_validator("status")
     @classmethod

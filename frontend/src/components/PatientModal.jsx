@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, AlertCircle, Save, User, Calendar, Stethoscope, Building, Bed, HeartPulse } from 'lucide-react';
 
 export default function PatientModal({
@@ -12,7 +12,54 @@ export default function PatientModal({
   genders = ['Male', 'Female', 'Other'],
   statuses = ['Admitted', 'Discharged'],
 }) {
-  const todayString = new Date().toISOString().split('T')[0];
+  const getTodayDateString = () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  const isFutureDate = (val) => {
+    if (!val || typeof val !== 'string') return false;
+    const clean = val.trim();
+    if (!clean) return false;
+    try {
+      let year, month, day;
+      if (clean.includes('/')) {
+        const parts = clean.split('/');
+        if (parts.length === 3) {
+          day = Number(parts[0]);
+          month = Number(parts[1]) - 1;
+          year = Number(parts[2]);
+        }
+      } else if (clean.includes('-')) {
+        const parts = clean.split('-');
+        if (parts.length === 3) {
+          if (parts[0].length === 4) {
+            year = Number(parts[0]);
+            month = Number(parts[1]) - 1;
+            day = Number(parts[2]);
+          } else {
+            day = Number(parts[0]);
+            month = Number(parts[1]) - 1;
+            year = Number(parts[2]);
+          }
+        }
+      }
+      if (!year || isNaN(month) || !day) return false;
+      const selected = new Date(year, month, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      selected.setHours(0, 0, 0, 0);
+      return selected.getTime() > today.getTime();
+    } catch {
+      return false;
+    }
+  };
+
+  const todayString = getTodayDateString();
+  const firstInputRef = useRef(null);
 
   const initialForm = {
     name: '',
@@ -29,6 +76,21 @@ export default function PatientModal({
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auto-focus first input field when modal opens (and select text in edit mode)
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        if (firstInputRef.current) {
+          firstInputRef.current.focus();
+          if (patientToEdit) {
+            firstInputRef.current.select();
+          }
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, patientToEdit]);
 
   useEffect(() => {
     if (patientToEdit) {
@@ -106,10 +168,10 @@ export default function PatientModal({
     }
 
     if (name === 'admission_date') {
-      if (!value) {
+      if (!value || (typeof value === 'string' && !value.trim())) {
         err = 'Admission date is required.';
-      } else if (value > todayString) {
-        err = 'Admission date cannot be in the future.';
+      } else if (isFutureDate(value)) {
+        err = `Admission date cannot be in the future. Selected date cannot be after today (${todayString}).`;
       }
     }
 
@@ -195,7 +257,9 @@ export default function PatientModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200/60 transition-colors"
+            tabIndex={11}
+            title="Close dialog (Esc)"
+            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200/60 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <X className="w-5 h-5" />
           </button>
@@ -208,7 +272,7 @@ export default function PatientModal({
           </div>
         )}
 
-        <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleFormSubmit} noValidate className="p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -216,15 +280,17 @@ export default function PatientModal({
               </label>
               <div className="relative">
                 <input
+                  ref={firstInputRef}
                   type="text"
                   name="name"
+                  tabIndex={1}
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g. Rahul Sharma (Letters and spaces only)"
                   className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:bg-white transition-all ${
                     errors.name
                       ? 'border-rose-400 focus:ring-rose-400 bg-rose-50/20'
-                      : 'border-slate-300 focus:ring-teal-500'
+                      : 'border-slate-300 focus:ring-teal-500 focus:border-teal-500'
                   }`}
                 />
               </div>
@@ -243,6 +309,7 @@ export default function PatientModal({
               <input
                 type="number"
                 name="age"
+                tabIndex={2}
                 min="0"
                 max="120"
                 value={formData.age}
@@ -251,7 +318,7 @@ export default function PatientModal({
                 className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:bg-white transition-all ${
                   errors.age
                     ? 'border-rose-400 focus:ring-rose-400 bg-rose-50/20'
-                    : 'border-slate-300 focus:ring-teal-500'
+                    : 'border-slate-300 focus:ring-teal-500 focus:border-teal-500'
                 }`}
               />
               {errors.age && (
@@ -268,9 +335,10 @@ export default function PatientModal({
               </label>
               <select
                 name="gender"
+                tabIndex={3}
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white"
               >
                 {genders.map((g) => (
                   <option key={g} value={g}>
@@ -286,9 +354,10 @@ export default function PatientModal({
               </label>
               <select
                 name="ward"
+                tabIndex={4}
                 value={formData.ward}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white"
               >
                 {wards.map((w) => (
                   <option key={w} value={w}>
@@ -304,9 +373,10 @@ export default function PatientModal({
               </label>
               <select
                 name="department"
+                tabIndex={5}
                 value={formData.department}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white"
               >
                 {departments.map((dept) => (
                   <option key={dept} value={dept}>
@@ -322,9 +392,10 @@ export default function PatientModal({
               </label>
               <select
                 name="doctor"
+                tabIndex={6}
                 value={formData.doctor}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white"
               >
                 {doctors.map((doc) => (
                   <option key={doc} value={doc}>
@@ -341,21 +412,29 @@ export default function PatientModal({
               <input
                 type="date"
                 name="admission_date"
+                tabIndex={7}
                 max={todayString}
                 value={formData.admission_date}
                 onChange={handleChange}
+                onBlur={(e) => {
+                  const err = validateField('admission_date', e.target.value);
+                  setErrors((prev) => ({ ...prev, admission_date: err }));
+                }}
                 className={`w-full px-3.5 py-2 text-xs bg-slate-50 border rounded-lg focus:outline-none focus:ring-2 focus:bg-white transition-all ${
                   errors.admission_date
-                    ? 'border-rose-400 focus:ring-rose-400 bg-rose-50/20'
-                    : 'border-slate-300 focus:ring-teal-500'
+                    ? 'border-rose-500 focus:ring-rose-500 bg-rose-50/30 text-rose-900 font-semibold'
+                    : 'border-slate-300 focus:ring-teal-500 focus:border-teal-500'
                 }`}
               />
-              <span className="text-[10px] text-slate-400 mt-0.5 block">Future dates not permitted</span>
-              {errors.admission_date && (
-                <p className="text-[11px] text-rose-600 mt-1 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+              {errors.admission_date ? (
+                <p className="text-[11px] text-rose-600 mt-1 flex items-center font-bold">
+                  <AlertCircle className="w-3.5 h-3.5 mr-1 flex-shrink-0 text-rose-600" />
                   {errors.admission_date}
                 </p>
+              ) : (
+                <span className="text-[10px] text-slate-500 mt-0.5 block font-medium">
+                  Select today ({todayString}) or earlier. Future dates are strictly rejected.
+                </span>
               )}
             </div>
 
@@ -365,9 +444,10 @@ export default function PatientModal({
               </label>
               <select
                 name="status"
+                tabIndex={8}
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white"
+                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white"
               >
                 {statuses.map((s) => (
                   <option key={s} value={s}>
@@ -382,13 +462,15 @@ export default function PatientModal({
             <button
               type="button"
               onClick={onClose}
+              tabIndex={9}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400"
             >
               Cancel
             </button>
             <button
               type="submit"
+              tabIndex={10}
               disabled={isSubmitting}
               className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 active:bg-teal-800 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50"
             >

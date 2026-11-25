@@ -26,7 +26,8 @@ export default function App() {
     total_departments: 0,
     total_wards: 0,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Search & Filters State
   const [searchTerm, setSearchTerm] = useState('');
@@ -73,14 +74,9 @@ export default function App() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-    }, 250);
+    }, 200);
     return () => clearTimeout(handler);
   }, [searchTerm]);
-
-  // Reset selected row to top result whenever search changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [debouncedSearch]);
 
   // Load clinical metadata
   useEffect(() => {
@@ -111,7 +107,6 @@ export default function App() {
   }, []);
 
   const fetchPatients = useCallback(async () => {
-    setIsLoading(true);
     try {
       const params = {};
       if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
@@ -133,6 +128,7 @@ export default function App() {
       );
     } finally {
       setIsLoading(false);
+      setIsInitialLoad(false);
     }
   }, [debouncedSearch, selectedWard, selectedDepartment, selectedDoctor, selectedStatus]);
 
@@ -428,19 +424,13 @@ export default function App() {
           searchRef={searchInputRef}
           wardRef={wardSelectRef}
           deptRef={deptSelectRef}
-          onNavigateDown={() => setSelectedIndex((prev) => (prev < patients.length - 1 ? prev + 1 : prev))}
-          onNavigateUp={() => setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0))}
-          onSelectCurrent={() => {
-            const p = patients[selectedIndex];
-            if (p) handleOpenEditPatientModal(p);
-          }}
         />
 
         {/* High-Contrast Clinical Table (Identical row layout for Tablet & Desktop) */}
         {patients.length > 0 ? (
           <PatientTable
             patients={patients}
-            isLoading={isLoading}
+            isLoading={isInitialLoad}
             selectedIndex={selectedIndex}
             onSelectIndex={setSelectedIndex}
             onEditPatient={handleOpenEditPatientModal}
