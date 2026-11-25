@@ -77,6 +77,11 @@ export default function App() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  // Reset selected row to top result whenever search changes
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [debouncedSearch]);
+
   // Load clinical metadata
   useEffect(() => {
     const fetchMeta = async () => {
@@ -251,12 +256,28 @@ export default function App() {
         }
       }
 
-      // If typing inside an input/form, ignore navigation single-character shortcuts
+      // If typing inside an input/form:
       if (isInputFocused) {
-        // Allow Enter in search input to blur and select first row
-        if (e.key === 'Enter' && activeEl === searchInputRef.current) {
-          activeEl.blur();
-          setSelectedIndex(0);
+        // While search input is focused, allow direct ArrowDown, ArrowUp, and Enter to navigate/select table rows!
+        if (activeEl === searchInputRef.current) {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedIndex((prev) => (prev < patients.length - 1 ? prev + 1 : prev));
+            return;
+          }
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+            return;
+          }
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const p = patients[selectedIndex];
+            if (p) {
+              handleOpenEditPatientModal(p);
+            }
+            return;
+          }
         }
         return;
       }
@@ -324,8 +345,8 @@ export default function App() {
         return;
       }
 
-      // Enter -> Edit/View selected patient
-      if (e.key === 'Enter') {
+      // 'e' or 'E' or 'Enter' -> Edit/View selected patient
+      if (e.key === 'e' || e.key === 'E' || e.key === 'Enter') {
         e.preventDefault();
         const selectedPatient = patients[selectedIndex];
         if (selectedPatient) {
@@ -348,8 +369,8 @@ export default function App() {
         return;
       }
 
-      // Delete / Backspace -> Delete selected patient
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+      // 'Delete' / 'Backspace' / 'x' or 'X' -> Delete selected patient record
+      if (e.key === 'Delete' || e.key === 'Backspace' || e.key === 'x' || e.key === 'X') {
         e.preventDefault();
         const selectedPatient = patients[selectedIndex];
         if (selectedPatient) {
@@ -407,6 +428,12 @@ export default function App() {
           searchRef={searchInputRef}
           wardRef={wardSelectRef}
           deptRef={deptSelectRef}
+          onNavigateDown={() => setSelectedIndex((prev) => (prev < patients.length - 1 ? prev + 1 : prev))}
+          onNavigateUp={() => setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0))}
+          onSelectCurrent={() => {
+            const p = patients[selectedIndex];
+            if (p) handleOpenEditPatientModal(p);
+          }}
         />
 
         {/* High-Contrast Clinical Table (Identical row layout for Tablet & Desktop) */}

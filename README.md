@@ -76,9 +76,9 @@ A modern, production-grade hospital patient admission and bed dispatch system. B
 8. **Professional ERP Keyboard Navigation**:
    - **`S`** or **`/`**: Instant focus on patient search bar.
    - **`↑` / `↓`** (or **`J` / `K`**): Move active patient row selection up and down with live indicator.
-   - **`Enter`**: Edit/view the currently selected patient record.
+   - **`E`** or **`Enter`**: Edit/view the currently selected patient record.
    - **`D`**: Mark currently selected admitted patient as Discharged.
-   - **`Delete` / `Backspace`**: Open deletion confirmation modal for the active record.
+   - **`Del`** or **`X`** or **`Backspace`**: Open deletion confirmation modal for the active record.
    - **`N`**: Open New Patient Admission registration modal.
    - **`W`**: Jump to Ward filter dropdown.
    - **`P`**: Jump to Department filter dropdown.

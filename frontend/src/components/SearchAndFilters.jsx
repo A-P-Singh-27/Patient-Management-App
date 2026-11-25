@@ -20,6 +20,9 @@ export default function SearchAndFilters({
   searchRef,
   wardRef,
   deptRef,
+  onNavigateDown,
+  onNavigateUp,
+  onSelectCurrent,
 }) {
   const hasActiveFilters =
     searchTerm !== '' ||
@@ -49,7 +52,21 @@ export default function SearchAndFilters({
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search patient name... (Press 'S')"
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                onNavigateDown && onNavigateDown();
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                onNavigateUp && onNavigateUp();
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                onSelectCurrent && onSelectCurrent();
+              } else if (e.key === 'Escape') {
+                e.target.blur();
+              }
+            }}
+            placeholder="Search patient name... (Press 'S', Navigate with ↑/↓)"
             className="w-full pl-8 pr-16 py-1.5 text-xs bg-slate-50 border-2 border-slate-300 rounded-md text-slate-900 placeholder-slate-400 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white focus:border-teal-500 transition-all"
           />
           <div className="absolute inset-y-0 right-0 pr-2 flex items-center space-x-1">

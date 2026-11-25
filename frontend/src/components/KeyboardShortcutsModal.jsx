@@ -16,15 +16,16 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }) {
     {
       category: 'Patient Actions',
       items: [
+        { key: 'E  or  Enter', desc: 'Edit selected patient details' },
+        { key: 'Del  or  X', desc: 'Delete selected patient record' },
+        { key: 'D', desc: 'Mark admitted patient as Discharged' },
         { key: 'N', desc: 'Open New Patient Admission modal' },
-        { key: 'D', desc: 'Mark selected admitted patient as Discharged' },
-        { key: 'Del / Backspace', desc: 'Delete selected patient record' },
       ],
     },
     {
       category: 'Search & Filtering',
       items: [
-        { key: 'S  or  /', desc: 'Quick-focus search bar' },
+        { key: 'S  or  /', desc: 'Focus search (use ↓ / ↑ inside to navigate)' },
         { key: 'W', desc: 'Jump to Ward filter' },
         { key: 'P', desc: 'Jump to Department filter' },
         { key: 'R', desc: 'Reset all active filters' },
