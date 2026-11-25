@@ -22,20 +22,14 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api"
     DATABASE_URL: str = _resolve_database_url()
-    ALLOWED_ORIGINS: Union[List[str], str] = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://pms-frontend-theta-eight.vercel.app",
-        "*"
-    ]
+    ALLOWED_ORIGINS: str = ""
 
     @property
     def cors_origins(self) -> List[str]:
-        if isinstance(self.ALLOWED_ORIGINS, str):
-            return [x.strip() for x in self.ALLOWED_ORIGINS.split(",") if x.strip()]
-        return self.ALLOWED_ORIGINS
+        raw = self.ALLOWED_ORIGINS or os.getenv("ALLOWED_ORIGINS", "")
+        if not raw or not raw.strip():
+            return []
+        return [x.strip() for x in raw.split(",") if x.strip()]
 
     GENDERS: List[str] = ["Male", "Female", "Other"]
 
