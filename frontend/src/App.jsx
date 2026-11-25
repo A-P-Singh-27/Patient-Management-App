@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from './components/Header';
 import StatsCards from './components/StatsCards';
 import SearchAndFilters from './components/SearchAndFilters';
 import PatientTable from './components/PatientTable';
 import PatientModal from './components/PatientModal';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import EmptyState from './components/EmptyState';
 import ToastNotification from './components/ToastNotification';
 import { patientApi } from './services/api';
@@ -27,12 +28,34 @@ export default function App() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
+  // Search & Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedWard, setSelectedWard] = useState('ALL');
   const [selectedDepartment, setSelectedDepartment] = useState('ALL');
   const [selectedDoctor, setSelectedDoctor] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
+
+  // Keyboard navigation & selected row index
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // References for keyboard focus jumps
+  const searchInputRef = useRef(null);
+  const wardSelectRef = useRef(null);
+  const deptSelectRef = useRef(null);
+
+  // Modals state
+  const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [patientToEdit, setPatientToEdit] = useState(null);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+
+  // Notification state
+  const [toast, setToast] = useState(null);
 
   const [metadata, setMetadata] = useState({
     wards: DEFAULT_WARDS,
@@ -42,26 +65,19 @@ export default function App() {
     statuses: STATUS_OPTIONS,
   });
 
-  const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
-  const [patientToEdit, setPatientToEdit] = useState(null);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [patientToDelete, setPatientToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const [toast, setToast] = useState(null);
-
   const showToast = (message, type = 'success', title = '') => {
     setToast({ message, type, title });
   };
 
+  // Search debounce
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-    }, 300);
+    }, 250);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
+  // Load clinical metadata
   useEffect(() => {
     const fetchMeta = async () => {
       try {
@@ -101,6 +117,8 @@ export default function App() {
 
       const data = await patientApi.getPatients(params);
       setPatients(data);
+      // Keep selectedIndex valid within new results length
+      setSelectedIndex((prev) => (data.length > 0 ? Math.min(prev, data.length - 1) : 0));
     } catch (err) {
       console.error('Failed to load patient records:', err);
       showToast(
@@ -128,6 +146,7 @@ export default function App() {
     setSelectedDepartment('ALL');
     setSelectedDoctor('ALL');
     setSelectedStatus('ALL');
+    setSelectedIndex(0);
   };
 
   const handleOpenNewPatientModal = () => {
@@ -153,6 +172,7 @@ export default function App() {
   };
 
   const handleDischargePatient = async (patient) => {
+    if (!patient || patient.status === 'Discharged') return;
     try {
       await patientApi.dischargePatient(patient.id);
       showToast(`Patient ${patient.name} has been marked as Discharged.`, 'success', 'Discharge Recorded');
@@ -160,7 +180,7 @@ export default function App() {
       fetchStats();
     } catch (err) {
       showToast(
-        err.response?.data?.detail || 'Failed to discharge patient.',
+        err.response?.data?.detail || err.response?.data?.message || 'Failed to discharge patient.',
         'error',
         'Action Failed'
       );
@@ -168,6 +188,7 @@ export default function App() {
   };
 
   const handleOpenDeleteModal = (patient) => {
+    if (!patient) return;
     setPatientToDelete(patient);
     setIsDeleteModalOpen(true);
   };
@@ -193,6 +214,155 @@ export default function App() {
     }
   };
 
+  // --------------------------------------------------------------------------
+  // PROFESSIONAL ERP KEYBOARD SHORTCUTS
+  // --------------------------------------------------------------------------
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      const activeEl = document.activeElement;
+      const isInputFocused =
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          activeEl.isContentEditable);
+
+      // ESCAPE key: universally cancels active modals, blurs inputs, closes cheatsheet
+      if (e.key === 'Escape') {
+        if (isPatientModalOpen) {
+          setIsPatientModalOpen(false);
+          return;
+        }
+        if (isDeleteModalOpen) {
+          setIsDeleteModalOpen(false);
+          return;
+        }
+        if (isShortcutsOpen) {
+          setIsShortcutsOpen(false);
+          return;
+        }
+        if (isInputFocused) {
+          activeEl.blur();
+          return;
+        }
+        if (searchTerm) {
+          setSearchTerm('');
+          return;
+        }
+      }
+
+      // If typing inside an input/form, ignore navigation single-character shortcuts
+      if (isInputFocused) {
+        // Allow Enter in search input to blur and select first row
+        if (e.key === 'Enter' && activeEl === searchInputRef.current) {
+          activeEl.blur();
+          setSelectedIndex(0);
+        }
+        return;
+      }
+
+      // If modal is open, don't trigger background dashboard navigation
+      if (isPatientModalOpen || isDeleteModalOpen) {
+        return;
+      }
+
+      // '?' -> Toggle Keyboard Shortcuts Cheatsheet
+      if (e.key === '?') {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+        return;
+      }
+
+      // 's' or '/' -> Focus search input
+      if (e.key === 's' || e.key === 'S' || e.key === '/') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      // 'w' or 'W' -> Jump to Ward filter
+      if (e.key === 'w' || e.key === 'W') {
+        e.preventDefault();
+        wardSelectRef.current?.focus();
+        return;
+      }
+
+      // 'p' or 'P' -> Jump to Department filter
+      if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        deptSelectRef.current?.focus();
+        return;
+      }
+
+      // 'r' or 'R' -> Reset all filters
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        handleResetFilters();
+        showToast('All search and dropdown filters cleared.', 'info', 'Filters Reset');
+        return;
+      }
+
+      // 'n' or 'N' or 'a' -> Register New Admission
+      if (e.key === 'n' || e.key === 'N' || e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        handleOpenNewPatientModal();
+        return;
+      }
+
+      // Arrow Down or 'j' -> Move selection down
+      if (e.key === 'ArrowDown' || e.key === 'j') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev < patients.length - 1 ? prev + 1 : prev));
+        return;
+      }
+
+      // Arrow Up or 'k' -> Move selection up
+      if (e.key === 'ArrowUp' || e.key === 'k') {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+        return;
+      }
+
+      // Enter -> Edit/View selected patient
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const selectedPatient = patients[selectedIndex];
+        if (selectedPatient) {
+          handleOpenEditPatientModal(selectedPatient);
+        }
+        return;
+      }
+
+      // 'd' or 'D' -> Discharge selected patient
+      if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        const selectedPatient = patients[selectedIndex];
+        if (selectedPatient) {
+          if (selectedPatient.status === 'Admitted') {
+            handleDischargePatient(selectedPatient);
+          } else {
+            showToast(`${selectedPatient.name} is already discharged.`, 'info');
+          }
+        }
+        return;
+      }
+
+      // Delete / Backspace -> Delete selected patient
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        const selectedPatient = patients[selectedIndex];
+        if (selectedPatient) {
+          handleOpenDeleteModal(selectedPatient);
+        }
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [patients, selectedIndex, isPatientModalOpen, isDeleteModalOpen, isShortcutsOpen, searchTerm]);
+
   const hasActiveFilters =
     searchTerm !== '' ||
     selectedWard !== 'ALL' ||
@@ -201,16 +371,23 @@ export default function App() {
     selectedStatus !== 'ALL';
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <Header onOpenNewModal={handleOpenNewPatientModal} />
+    <div className="min-h-screen bg-slate-100/70 flex flex-col font-sans">
+      {/* Sleek Zero-Waste ERP Header */}
+      <Header
+        onOpenNewModal={handleOpenNewPatientModal}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
+      />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main High-Density ERP Workspace */}
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-2.5 sm:px-4 py-2.5 sm:py-3.5 space-y-2.5">
+        {/* Compact KPI & Status Filter Bar */}
         <StatsCards
           stats={stats}
           currentStatusFilter={selectedStatus}
           onSelectStatusFilter={(statusVal) => setSelectedStatus(statusVal)}
         />
 
+        {/* Unified Search & Multi-Filter Command Bar */}
         <SearchAndFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -227,12 +404,18 @@ export default function App() {
           departments={metadata.departments}
           doctors={metadata.doctors}
           totalResults={patients.length}
+          searchRef={searchInputRef}
+          wardRef={wardSelectRef}
+          deptRef={deptSelectRef}
         />
 
+        {/* High-Contrast Clinical Table (Identical row layout for Tablet & Desktop) */}
         {patients.length > 0 ? (
           <PatientTable
             patients={patients}
             isLoading={isLoading}
+            selectedIndex={selectedIndex}
+            onSelectIndex={setSelectedIndex}
             onEditPatient={handleOpenEditPatientModal}
             onOpenDeleteModal={handleOpenDeleteModal}
             onDischargePatient={handleDischargePatient}
@@ -248,10 +431,23 @@ export default function App() {
         )}
       </main>
 
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <p>© 2026 Dscribe Medical Admission Management System. Built with React & FastAPI.</p>
+      {/* Compact ERP Status Bar Footer */}
+      <footer className="bg-white border-t border-slate-300 py-2.5 px-4 text-center text-[11px] text-slate-500 flex flex-col sm:flex-row items-center justify-between max-w-[1600px] w-full mx-auto">
+        <div className="flex items-center space-x-2">
+          <span className="font-bold text-slate-700">Dscribe ERP PMS</span>
+          <span>•</span>
+          <span>Inpatient Admission & Ward Management</span>
+        </div>
+        <div className="flex items-center space-x-3 mt-1 sm:mt-0 font-medium text-slate-600">
+          <span>Shortcuts: Press <kbd className="px-1 py-0.2 bg-slate-100 border border-slate-300 rounded font-mono font-bold text-[10px]">?</kbd></span>
+          <span>•</span>
+          <span>Search: <kbd className="px-1 py-0.2 bg-slate-100 border border-slate-300 rounded font-mono font-bold text-[10px]">S</kbd></span>
+          <span>•</span>
+          <span>Navigate: <kbd className="px-1 py-0.2 bg-slate-100 border border-slate-300 rounded font-mono font-bold text-[10px]">↑/↓</kbd></span>
+        </div>
       </footer>
 
+      {/* Patient Add/Edit Form Modal */}
       <PatientModal
         isOpen={isPatientModalOpen}
         onClose={() => setIsPatientModalOpen(false)}
@@ -264,6 +460,7 @@ export default function App() {
         statuses={metadata.statuses}
       />
 
+      {/* Delete Confirmation Modal */}
       <DeleteConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
@@ -275,6 +472,13 @@ export default function App() {
         isDeleting={isDeleting}
       />
 
+      {/* Keyboard Shortcuts Cheatsheet Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* Toast Notification Alerts */}
       <ToastNotification toast={toast} onDismiss={() => setToast(null)} />
     </div>
   );

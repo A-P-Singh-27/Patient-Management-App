@@ -73,6 +73,19 @@ A modern, production-grade hospital patient admission and bed dispatch system. B
 7. **Aggregated Metric Cards**:
    - Top overview dashboard cards displaying **Total Patients**, **Currently Admitted**, **Discharged**, and **Active Clinical Departments**.
 
+8. **Professional ERP Keyboard Navigation**:
+   - **`S`** or **`/`**: Instant focus on patient search bar.
+   - **`↑` / `↓`** (or **`J` / `K`**): Move active patient row selection up and down with live indicator.
+   - **`Enter`**: Edit/view the currently selected patient record.
+   - **`D`**: Mark currently selected admitted patient as Discharged.
+   - **`Delete` / `Backspace`**: Open deletion confirmation modal for the active record.
+   - **`N`**: Open New Patient Admission registration modal.
+   - **`W`**: Jump to Ward filter dropdown.
+   - **`P`**: Jump to Department filter dropdown.
+   - **`R`**: Reset all active search and dropdown filters.
+   - **`?`**: Toggle the interactive Keyboard Shortcuts Cheatsheet.
+   - **`Esc`**: Dismiss active dialogs, clear search, and unfocus inputs.
+
 ---
 
 ## 🛡️ Validation Matrix
